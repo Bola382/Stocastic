@@ -11,11 +11,12 @@ sigma = rgamma(1,10,1); sigma
 lambda = rnorm(1, 0, 10); lambda
 nu = sample(1:20, 1); nu
 
+# densidade st
+source("dst.R")
+
 # ------------------------------------------------------------------
 #                      Representacao hierarquica
 # ------------------------------------------------------------------
-# densidade st
-source("dst.R")
 
 # gera amostras da st 
 # usando a representacao hierarquica
@@ -63,19 +64,20 @@ plot(1, xlim = c(-60,10), ylim = c(0, .1),type = "n",
 curve(dst(x, mu, sigma, lambda, nu), add = T)
 curve(dnorm(x,-15, 20), col = 2, add = T)
 
-# determinando a parabola que tem vertice (v1,v2) e passa por (x1,y2)
-x1 = -15; y1 = 0
-v1 = -10; v2 = 0.07
-
-a = (y1-v2)/(x1-v1)^2
-
-env_rej = function(x) 3.88*dnorm(x, -15, 20) # funcao envelope
-sqz_rej = function(x) a*(x-v1)^2+v2          # funcao squeeze
+# funcao envelope
+env_rej = function(x) 3.88*dnorm(x, -15, 20) 
+# funcao squeeze (olhar applet do geogebra)
+sqz_rej = function(x){
+ -0.0000000061715*x^6 - 0.0000009267749*x^5 - 0.0000560775342*x^4-
+  0.0017399225511*x^3 - 0.0288821956928*x^2 - 0.2364142400584*x -
+  0.6715760552873
+}
 
 curve(env_rej(x), col = 2, lty = 2, add = T)
 curve(sqz_rej(x), col = 3, lty = 2, add = T)
-legend("topleft", 
-       legend = c("Função objetivo", "Densidade proposta","Envelope proposto"), 
+legend("topleft", legend = c("Função objetivo", 
+                             "Densidade proposta",
+                             "Envelope proposto"), 
        lty = c(1,1,2), col = c(1,2,2))
 
 # verificando funcionamento
@@ -84,4 +86,4 @@ source("rstRej_sqz.R")
 set.seed(1)
 y = rstRej_sqz(10000, mu, sigma, lambda, nu, myrnorm,env_rej, sqz_rej, -15, 20)
 hist(y$samples, freq = F, breaks = 30, add = T)
-y$interacoes
+10000/y$interacoes
