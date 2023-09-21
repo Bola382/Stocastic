@@ -3,6 +3,7 @@
 # n: numero de amostras (natural)
 # mu, sigma, lambda, nu: parametros (real, real positivo, real, natural)
 # dist: funcao que gera amostras da distribuicao proposta
+# o primeiro argumento de dist deve ser o numero de amostras
 # env: funcao que da o envelope proposto, deve ser proporcional a fdp de dist
 # sqz: funcao squeeze
 # ...: parametros opcionais de dist
@@ -18,17 +19,18 @@ rstRej_sqz = function(n, mu, sigma, lambda, nu, dist, env, sqz, ...){
   
   p = sqz(x)/env(x)
   
-  if(p>1) stop("p > 1, verificar envelope e squeeze.")
+  if(p>1 | p < 0) stop("p nao esta no (0,1), verificar envelope e squeeze.")
   
   if(u <= p){
    samp = c(samp,x); nsamp = nsamp+1
   }else{
    p = dst(x, mu, sigma, lambda, nu)/env(x)
-   if(p>1) stop("p > 1, verificar envelope.")
+   
+   if(p>1 | p < 0) stop("p nao esta no (0,1), verificar envelope.")
    if(u <= p){samp = c(samp,x); nsamp = nsamp+1}
   }
   
   inter = inter + 1
  }
- return(list(samples = samp, interacoes = inter))
+ return(list(samples = samp, iteracoes = inter))
 }
