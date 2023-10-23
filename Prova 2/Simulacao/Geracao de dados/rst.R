@@ -17,8 +17,3 @@ rst = function(n,mu,sigma,lambda,nu){
  
  mu + (Delta*abs(t1)+tau*t2)/sqrt(u)
 }
-
-#y = rst(10000, 10, 2, -8, 5.2)
-
-#hist(y,freq=F,breaks = 30)
-#curve(dst(x,10,2,-8,5.2),add=T)
