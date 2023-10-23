@@ -149,11 +149,15 @@ for(i in 2:Q){
   # ----------------------
   aux_yxbeta = y[k]-aux_mu[k,z.samp[i,k]]
   aux_denom = Delta.samp[i,z.samp[i,k]]^2 + tau2.samp[i,z.samp[i,k]]
-  
+  aux_mean = (aux_yxbeta*Delta.samp[i,z.samp[i,k]])/aux_denom
+  aux_sd = sqrt(tau2.samp[i,z.samp[i,k]]/(u.samp[i-1,k]*aux_denom))
   # media antes do truncamento muito distante do lb
-  t.samp[i,k] = Runuran::urnorm(1, mean = (aux_yxbeta*Delta.samp[i,z.samp[i,k]])/aux_denom,
-                                sd = sqrt(tau2.samp[i,z.samp[i,k]]/(u.samp[i-1,k]*aux_denom)),
-                                lb = 0)
+  
+  aux_truncnorm = Runuran::urnorm(1, mean = 0,
+                                  sd = 1,
+                                  lb = -aux_mean/aux_sd)
+  
+  t.samp[i,k] = aux_mean+aux_sd*aux_truncnorm
   # ----------------------
   # Atualizando U
   # ----------------------
