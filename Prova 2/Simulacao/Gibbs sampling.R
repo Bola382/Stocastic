@@ -23,7 +23,7 @@ X = as.matrix(cbind(1,data[,-(1:2)])) # covariaveis com intercepto
 # Inicio do algoritmo
 # ------------------------
 
-Q = 10000 # numero de iteracoes de Gibbs
+Q = 20000 # numero de iteracoes de Gibbs
 R = 2 # numero de cadeias
 phi = 2.8 # desvio padrao do passeio aleatorio de nu
 cont = 0 # contador de aceites de MH
@@ -110,11 +110,12 @@ for(i in 2:Q){
   # ----------------------
   # Atualizando beta
   # ----------------------
-  
+  mmm = solve(sigma_inv,XU%*%aux_y)
+  ppp = tau2.samp[i-1,j]*solve(sigma_inv)
   # [iter,coefs,componente]
-  beta.samp[i,,j] = MASS::mvrnorm(1, mu = solve(sigma_inv,XU%*%aux_y), 
-                                     Sigma = tau2.samp[i-1,j]*solve(sigma_inv))
-  
+  beta.samp[i,,j] = MASS::mvrnorm(1, mu = mmm, 
+                                     Sigma = ppp)
+  #if(j==1){cat(i,"\t", beta.samp[i,,j], "\t med",mmm[1],"\t var", ppp[1,1], "\n")}
   # ----------------------
   # Atualizando tau2
   # ----------------------
@@ -189,7 +190,7 @@ for(i in 2:Q){
  }else{
   nu.samp[i] = nu.samp[i-1]
  }
- pb$tick(tokens = list(taxa = paste(formatC(cont/i * 100,2,format="f"),"%")))
+ pb$tick(tokens = list(taxa = paste0(formatC(cont/i * 100,2,format="f"),"%")))
 };beepr::beep()
 
 # aceitacao do MH deve estar entre 0.234 e 0.44
@@ -197,14 +198,43 @@ for(i in 2:Q){
 # library(coda)
 # 
 # # [iter,coefs,componente]
-# traceplot(mcmc(beta.samp[,,1]))
+# traceplot(mcmc(beta.samp[,1,1]))
 # traceplot(mcmc(beta.samp[,,2]))
 # acf(beta.samp[,,1])
 # acf(beta.samp[,,2])
 # 
-# traceplot(mcmc(tau2.samp[200:Q,1]))
+# traceplot(mcmc(tau2.samp[200:Q,2]))
 # traceplot(mcmc(tau2.samp))
 # acf(beta.samp[,,1])
 # acf(beta.samp[,,2])
-
-# tentando concertar o git
+# 
+# traceplot(mcmc(nu.samp[200:Q]))
+# traceplot(mcmc(nu.samp))
+# acf(nu.samp)
+# 
+# i = 41
+# j = 1
+# 
+# U = diag(u.samp[i-1,])
+# m = NULL
+# index = which(z.samp[i-1,]==j)
+# mj = length(index)
+# m[j] = mj
+# Xj = X[index,] # dim = mjXp
+# Uj = U[index,index] # dim = mjXmj
+# yj = y[index] # dim = mjX1
+# tj = t.samp[i-1, index] # dim = mjX1
+# 
+# if(mj==1){
+#  XU = as.matrix(Xj)%*%Uj # t(Xj)%*%Uj
+# }else{
+#  XU = crossprod(Xj,Uj) # t(Xj)%*%Uj
+# }
+# aux_y = yj-(b+tj)*Delta.samp[i-1,j]
+# sigma_inv = XU%*%Xj + diag(tau2.samp[i-1,j]/c^2,nrow = p)
+# 
+# solve(sigma_inv,XU%*%aux_y)
+# tau2.samp[i-1,j]*solve(sigma_inv)
+# 
+# MASS::mvrnorm(1, mu = solve(sigma_inv,XU%*%aux_y),
+#                                  Sigma = tau2.samp[i-1,j]*solve(sigma_inv))
