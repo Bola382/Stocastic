@@ -23,7 +23,7 @@ X = as.matrix(cbind(1,data[,-(1:2)])) # covariaveis com intercepto
 # Inicio do algoritmo
 # ------------------------
 
-Q = 20000 # numero de iteracoes de Gibbs
+Q = 10000 # numero de iteracoes de Gibbs
 R = 2 # numero de cadeias
 phi = 2.8 # desvio padrao do passeio aleatorio de nu
 cont = 0 # contador de aceites de MH
@@ -75,7 +75,7 @@ enableJIT(3)
 
 set.seed(1)
 for(i in 2:Q){
- b = -sqrt(nu.samp[i-1]/pi)*exp(lgamma((nu.samp[i-1]-1)/2)-lgamma(nu.samp[i-1]/2)) #exp(log(.))
+ b = -sqrt(nu.samp[i-1]/pi)*(gamma((nu.samp[i-1]-1)/2)/gamma(nu.samp[i-1]/2))
  U = diag(u.samp[i-1,])
  m = NULL
  #m = table(z.samp[i-1,]) # n de amostras por comp
@@ -110,8 +110,9 @@ for(i in 2:Q){
   # ----------------------
   # Atualizando beta
   # ----------------------
-  mmm = solve(sigma_inv,XU%*%aux_y)
-  ppp = tau2.samp[i-1,j]*solve(sigma_inv)
+  #s_sigma = solve(sigma_inv)
+  mmm = solve(sigma_inv,XU%*%aux_y) #crossprod(s_sigma,XU%*%aux_y)
+  ppp = tau2.samp[i-1,j]*solve(sigma_inv)#*s_sigma
   # [iter,coefs,componente]
   beta.samp[i,,j] = MASS::mvrnorm(1, mu = mmm, 
                                      Sigma = ppp)
@@ -195,13 +196,13 @@ for(i in 2:Q){
 
 # aceitacao do MH deve estar entre 0.234 e 0.44
 
-# library(coda)
-# 
-# # [iter,coefs,componente]
-# traceplot(mcmc(beta.samp[,1,1]))
-# traceplot(mcmc(beta.samp[,,2]))
-# acf(beta.samp[,,1])
-# acf(beta.samp[,,2])
+library(coda)
+
+# [iter,coefs,componente]
+traceplot(mcmc(beta.samp[,1,1]))
+traceplot(mcmc(beta.samp[,,2]))
+acf(beta.samp[,,1])
+acf(beta.samp[,,2])
 # 
 # traceplot(mcmc(tau2.samp[200:Q,2]))
 # traceplot(mcmc(tau2.samp))
@@ -212,8 +213,11 @@ for(i in 2:Q){
 # traceplot(mcmc(nu.samp))
 # acf(nu.samp)
 # 
-# i = 41
+# i = which.max(beta.samp[,1,1])
 # j = 1
+# 
+# b = -sqrt(nu.samp[i-1]/pi)*gamma((nu.samp[i-1]-1)/2)/gamma(nu.samp[i-1]/2)
+# 
 # 
 # U = diag(u.samp[i-1,])
 # m = NULL
@@ -233,8 +237,19 @@ for(i in 2:Q){
 # aux_y = yj-(b+tj)*Delta.samp[i-1,j]
 # sigma_inv = XU%*%Xj + diag(tau2.samp[i-1,j]/c^2,nrow = p)
 # 
-# solve(sigma_inv,XU%*%aux_y)
-# tau2.samp[i-1,j]*solve(sigma_inv)
+# solve(sigma_inv)%*%sigma_inv
+# 
+# lu_decomp = matrixcalc::lu.decomposition(sigma_inv)
+# solve(lu_decomp$U, solve(lu_decomp$L, diag(1, nrow = dim(lu_decomp$L))))%*%sigma_inv
+# 
+# solve(sigma_inv,crossprod(t(XU),aux_y))
+# tau2.samp[i-1,j]*
 # 
 # MASS::mvrnorm(1, mu = solve(sigma_inv,XU%*%aux_y),
 #                                  Sigma = tau2.samp[i-1,j]*solve(sigma_inv))
+# k=1
+# aux_yxbeta = y[k]-aux_mu[k,z.samp[i,k]]
+# aux_denom = Delta.samp[i,z.samp[i,k]]^2 + tau2.samp[i,z.samp[i,k]]
+# aux_mean = (aux_yxbeta*Delta.samp[i,z.samp[i,k]])/aux_denom
+# aux_sd = sqrt(tau2.samp[i,z.samp[i,k]]/(u.samp[i-1,k]*aux_denom))
+# -aux_mean/aux_sd
