@@ -23,7 +23,7 @@ X = as.matrix(cbind(1,data[,-(1:2)])) # covariaveis com intercepto
 # Inicio do algoritmo
 # ------------------------
 
-Q = 50000 # numero de iteracoes de Gibbs
+Q = 100000 # numero de iteracoes de Gibbs
 phi = 4 # desvio padrao do passeio aleatorio de nu
 cont = 0 # contador de aceites de MH
 
@@ -31,7 +31,7 @@ cont = 0 # contador de aceites de MH
 # valores iniciais
 # ~~~~~~~~~~~~~~~~
 
-G = 2 # n componentes
+G = 3 # n componentes
 
 # propostas geradas a partir das prioris
 set.seed(2)
@@ -52,7 +52,7 @@ eta = 0; omega = 10 # da Delta
 r = s = .01 # da tau2
 
 prob.samp[1,] = gtools::rdirichlet(1, alpha = xi) # pesos
-beta.samp[1,,] =  matrix(rnorm(p*G,sd=c),ncol=2) # coef reg
+beta.samp[1,,] =  matrix(rnorm(p*G,sd=c),ncol=G) # coef reg
 tau2.samp[1,] = 1/rgamma(G,r,s)# escala
 Delta.samp[1,] = rnorm(G,eta,omega)# forma
 alpha.samp = runif(1,.02,.5)# hiperparametro da priori de nu
@@ -198,11 +198,11 @@ for(i in 2:Q){
 # library(coda)
 # 
 # # [iter,coefs,componente]
-# traceplot(mcmc(beta.samp[30000:Q,,1]))
-# traceplot(mcmc(beta.samp[30000:Q,,2]))
+# traceplot(mcmc(beta.samp[6000:Q,,1]))
+# traceplot(mcmc(beta.samp[,,2]))
 # acf(beta.samp[,,1])
 # acf(beta.samp[,,2])
-
+# 
 # traceplot(mcmc(tau2.samp[,1]))
 # traceplot(mcmc(tau2.samp[,2]))
 # acf(tau2.samp[,1])
