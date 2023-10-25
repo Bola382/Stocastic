@@ -195,10 +195,12 @@ for(i in 2:Q){
 
 # aceitacao do MH deve estar entre 0.234 e 0.44
 
+# Q = 100000 demorou 9:02:55
+
 # library(coda)
 # 
 # # [iter,coefs,componente]
-# traceplot(mcmc(beta.samp[6000:Q,,1]))
+# traceplot(mcmc(beta.samp[,1,1]))
 # traceplot(mcmc(beta.samp[,,2]))
 # acf(beta.samp[,,1])
 # acf(beta.samp[,,2])
@@ -244,11 +246,8 @@ for(i in 2:Q){
 # 
 # solve(sigma_inv)%*%sigma_inv
 # 
-# lu_decomp = matrixcalc::lu.decomposition(sigma_inv)
-# solve(lu_decomp$U, solve(lu_decomp$L, diag(1, nrow = dim(lu_decomp$L))))%*%sigma_inv
-# 
 # solve(sigma_inv,crossprod(t(XU),aux_y))
-# tau2.samp[i-1,j]*
+# tau2.samp[i-1,j]*solve(sigma_inv)
 # 
 # MASS::mvrnorm(1, mu = solve(sigma_inv,XU%*%aux_y),
 #                                  Sigma = tau2.samp[i-1,j]*solve(sigma_inv))
