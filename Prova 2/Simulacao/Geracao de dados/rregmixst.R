@@ -17,7 +17,7 @@ rregmixst = function(covs, probs, beta, sigma, lambda, nu){
  Z = sample(1:G, n, replace = T, prob = probs)
  
  # centralizando a media em x*beta
- b = -sqrt(nu/pi)*exp(lgamma((nu-1)/2)-lgamma(nu/2)) #exp(log(.))
+ b = -sqrt(nu/pi)*gamma((nu-1)/2)/gamma(nu/2)
  Delta = sigma*(lambda/sqrt(1+lambda^2))
  
  mu = covs%*%beta + matrix(rep(b*Delta,n), nrow = n, ncol = G, byrow = T)

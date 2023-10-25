@@ -23,7 +23,7 @@ X = as.matrix(cbind(1,data[,-(1:2)])) # covariaveis com intercepto
 # Inicio do algoritmo
 # ------------------------
 
-Q = 10000 # numero de iteracoes de Gibbs
+Q = 20000 # numero de iteracoes de Gibbs
 R = 2 # numero de cadeias
 phi = 2.8 # desvio padrao do passeio aleatorio de nu
 cont = 0 # contador de aceites de MH
@@ -110,9 +110,9 @@ for(i in 2:Q){
   # ----------------------
   # Atualizando beta
   # ----------------------
-  #s_sigma = solve(sigma_inv)
-  mmm = solve(sigma_inv,XU%*%aux_y) #crossprod(s_sigma,XU%*%aux_y)
-  ppp = tau2.samp[i-1,j]*solve(sigma_inv)#*s_sigma
+  s_sigma = solve(sigma_inv)
+  mmm = crossprod(s_sigma,XU%*%aux_y) #solve(sigma_inv,XU%*%aux_y) 
+  ppp = tau2.samp[i-1,j]*s_sigma#solve(sigma_inv)
   # [iter,coefs,componente]
   beta.samp[i,,j] = MASS::mvrnorm(1, mu = mmm, 
                                      Sigma = ppp)
@@ -196,13 +196,13 @@ for(i in 2:Q){
 
 # aceitacao do MH deve estar entre 0.234 e 0.44
 
-library(coda)
-
-# [iter,coefs,componente]
-traceplot(mcmc(beta.samp[,1,1]))
-traceplot(mcmc(beta.samp[,,2]))
-acf(beta.samp[,,1])
-acf(beta.samp[,,2])
+# library(coda)
+# 
+# # [iter,coefs,componente]
+# traceplot(mcmc(beta.samp[6000:8000,1,1]))
+# traceplot(mcmc(beta.samp[,,2]))
+# acf(beta.samp[,,1])
+# acf(beta.samp[,,2])
 # 
 # traceplot(mcmc(tau2.samp[200:Q,2]))
 # traceplot(mcmc(tau2.samp))

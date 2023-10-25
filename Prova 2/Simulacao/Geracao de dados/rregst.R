@@ -11,7 +11,7 @@ rregst = function(covs, beta, sigma, lambda, nu){
  n = nrow(covs) # numero de amostras
  
  # centralizando a media em x*beta
- b = -sqrt(nu/pi)*exp(lgamma((nu-1)/2)-lgamma(nu/2)) #exp(log(.))
+ b = -sqrt(nu/pi)*gamma((nu-1)/2)/gamma(nu/2)
  Delta = sigma*(lambda/sqrt(1+lambda^2))
  
  mu = covs%*%beta + b*Delta
