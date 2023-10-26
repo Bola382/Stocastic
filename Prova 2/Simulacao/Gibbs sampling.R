@@ -226,14 +226,14 @@ for(i in 2:Q){
 # acf(beta.samp[,,1])
 # acf(beta.samp[,,2])
 # 
-# traceplot(mcmc(tau2.samp[,1]))
+# traceplot(mcmc(tau2.samp[seq(Q/2,Q,10),1]))
 # traceplot(mcmc(tau2.samp[,2]))
 # acf(tau2.samp[,1])
 # acf(tau2.samp[,2])
 # 
 # traceplot(mcmc(Delta.samp[,1]))
 # traceplot(mcmc(Delta.samp[,2]))
-# acf(Delta.samp[,1])
+# acf(Delta.samp[seq(Q/2,Q,250),1])
 # acf(Delta.samp[,2])
 # 
 # traceplot(mcmc(nu.samp))
