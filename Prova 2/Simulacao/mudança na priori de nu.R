@@ -2,11 +2,13 @@
 # Gerando amostras da posteriori utilizando Gibbs
 # ==============================================================================
 
+# descartar 2000 pular de 100 em 100 ficar com 2000 amostras
+
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 rm(list=ls())
 
 source("Geracao de dados/dst.R")
-source("fullnu.R")
+source("Phinu.R")
 source("rtruncnorm.R")
 load("Geracao de dados/dados.Rdata")
 
@@ -24,7 +26,6 @@ X = as.matrix(cbind(1,data[,-(1:2)])) # covariaveis com intercepto
 # ------------------------
 
 Q = 10000 # numero de iteracoes de Gibbs
-phi = 1.1 # desvio padrao do passeio aleatorio de nu
 cont = 0 # contador de aceites de MH
 
 # ~~~~~~~~~~~~~~~~
@@ -49,9 +50,9 @@ beta.samp = array(NA, dim = c(Q,p,G), dimnames = list(1:Q, 1:p, 1:G))
 xi = rep(1,G) # prob
 c = 10 # da beta (c <- sqrt(c) das minhas contas)
 eta = 0; omega = 10 # da Delta
-r = s = .01 # da tau2
+r = s = .1 # da tau2
 
-# sao os ultimos valores da cadeia anterior
+# sao os ultimos valores da cadeia com 10^5 iteracoes
 
 prob.samp[1,] = c(0.3834102, 0.3262878, 0.2903020) # gtools::rdirichlet(1, alpha = xi) # pesos
 beta.samp[1,,] = matrix(c(-4.395930, -3.967069,  8.023600,
@@ -186,9 +187,9 @@ for(i in 2:Q){
  # ----------------------
  
  # Passo de MH
- prop = 1+rexp(1,rate = phi)
+ prop = 1+rexp(1,rate = alpha.samp[i])
  
- aceit = min(1,exp(fullnu(prop,alpha.samp[i],prob.samp[i,],y,aux_mu,aux_sig,aux_lam) - phi*nu.samp[i-1] - fullnu(nu.samp[i-1],alpha.samp[i],prob.samp[i,],y,aux_mu,aux_sig,aux_lam) + phi*prop))
+ aceit = min(1,exp(Phinu(prop,prob.samp[i,],y,aux_mu,aux_sig,aux_lam) - Phinu(nu.samp[i-1],prob.samp[i,],y,aux_mu,aux_sig,aux_lam)))
  if(aceit > 1 | aceit <0){stop("Problema no passo MH")}
  if(runif(1)<=aceit){
   nu.samp[i] = prop
