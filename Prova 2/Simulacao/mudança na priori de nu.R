@@ -2,8 +2,6 @@
 # Gerando amostras da posteriori utilizando Gibbs
 # ==============================================================================
 
-# descartar 2000 pular de 100 em 100 ficar com 2000 amostras
-
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 rm(list=ls())
 
@@ -25,7 +23,7 @@ X = as.matrix(cbind(1,data[,-(1:2)])) # covariaveis com intercepto
 # Inicio do algoritmo
 # ------------------------
 
-Q = 10000 # numero de iteracoes de Gibbs
+Q = 50000 # numero de iteracoes de Gibbs
 cont = 0 # contador de aceites de MH
 
 # ~~~~~~~~~~~~~~~~
@@ -52,22 +50,18 @@ c = 10 # da beta (c <- sqrt(c) das minhas contas)
 eta = 0; omega = 10 # da Delta
 r = s = .1 # da tau2
 
-# sao os ultimos valores da cadeia com 10^5 iteracoes
+# entre ## sao os ultimos valores da cadeia com 10^5 iteracoes
 
-prob.samp[1,] = c(0.3834102, 0.3262878, 0.2903020) # gtools::rdirichlet(1, alpha = xi) # pesos
-beta.samp[1,,] = matrix(c(-4.395930, -3.967069,  8.023600,
-                          -4.195635,  3.960460,  8.000703, #matrix(rnorm(p*G,sd=c),ncol=G) # coef reg
-                          6.019239,  4.952663,  7.174152), nrow = 3)
-tau2.samp[1,] = c(0.49742352, 0.04233568, 0.45428368) #1/rgamma(G,r,s)# escala
-Delta.samp[1,] = c(-4.537193, -3.037586,  7.439807) #rnorm(G,eta,omega)# forma
-alpha.samp = 0.1868161 #runif(1,.02,.5)# hiperparametro da priori de nu
-nu.samp = 2.277813 #rexp(1,rate=alpha.samp)# gl
+prob.samp[1,] = gtools::rdirichlet(1, alpha = xi) # pesos  
+beta.samp[1,,] = matrix(rnorm(p*G,sd=c),ncol=G) # coef reg 
+tau2.samp[1,] = 1/rgamma(G,r,s)# escala
+Delta.samp[1,] = rnorm(G,eta,omega)# forma
+alpha.samp = runif(1,.02,.5)# hiperparametro da priori de nu
+nu.samp = rexp(1,rate=alpha.samp)# gl
 
-utz.ini = read.table("utz_ini.txt", h = T)
-
-u.samp[1,] = utz.ini[,1] #rgamma(n, shape = nu.samp/2, rate = nu.samp/2) # t e u da representacao aumentada
-t.samp[1,] = utz.ini[,2] #abs(rnorm(n))/sqrt(u.samp[1,])
-z.samp[1,] = utz.ini[,3] #sample(1:G,n,prob=prob.samp[1,], replace = T) # latente que indica os grupos
+u.samp[1,] = rgamma(n, shape = nu.samp/2, rate = nu.samp/2) # t e u da representacao aumentada
+t.samp[1,] = abs(rnorm(n))/sqrt(u.samp[1,])
+z.samp[1,] = sample(1:G,n,prob=prob.samp[1,], replace = T) # latente que indica os grupos
 
 # ~~~~~~~~~~~~~~~~~~~
 # Barra de progresso
@@ -79,7 +73,6 @@ pb = progress_bar$new(format, clear = FALSE, total = Q, complete = "=", incomple
 library(compiler)
 enableJIT(3)
 
-set.seed(1)
 for(i in 2:Q){
  b = -sqrt(nu.samp[i-1]/pi)*(gamma((nu.samp[i-1]-1)/2)/gamma(nu.samp[i-1]/2))
  U = diag(u.samp[i-1,])
