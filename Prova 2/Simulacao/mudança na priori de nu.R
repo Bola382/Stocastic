@@ -24,7 +24,7 @@ X = as.matrix(cbind(1,data[,-(1:2)])) # covariaveis com intercepto
 # ------------------------
 
 Q = 10000 # numero de iteracoes de Gibbs
-phi = 4 # desvio padrao do passeio aleatorio de nu
+phi = 1.1 # desvio padrao do passeio aleatorio de nu
 cont = 0 # contador de aceites de MH
 
 # ~~~~~~~~~~~~~~~~
@@ -56,7 +56,7 @@ r = s = .01 # da tau2
 prob.samp[1,] = c(0.3834102, 0.3262878, 0.2903020) # gtools::rdirichlet(1, alpha = xi) # pesos
 beta.samp[1,,] = matrix(c(-4.395930, -3.967069,  8.023600,
                           -4.195635,  3.960460,  8.000703, #matrix(rnorm(p*G,sd=c),ncol=G) # coef reg
-                           6.019239,  4.952663,  7.174152), nrow = 3)
+                          6.019239,  4.952663,  7.174152), nrow = 3)
 tau2.samp[1,] = c(0.49742352, 0.04233568, 0.45428368) #1/rgamma(G,r,s)# escala
 Delta.samp[1,] = c(-4.537193, -3.037586,  7.439807) #rnorm(G,eta,omega)# forma
 alpha.samp = 0.1868161 #runif(1,.02,.5)# hiperparametro da priori de nu
@@ -120,7 +120,7 @@ for(i in 2:Q){
   ppp = tau2.samp[i-1,j]*s_sigma#solve(sigma_inv)
   # [iter,coefs,componente]
   beta.samp[i,,j] = MASS::mvrnorm(1, mu = mmm, 
-                                     Sigma = ppp)
+                                  Sigma = ppp)
   #if(j==1){cat(i,"\t", beta.samp[i,,j], "\t med",mmm[1],"\t var", ppp[1,1], "\n")}
   # ----------------------
   # Atualizando tau2
@@ -130,7 +130,7 @@ for(i in 2:Q){
   tau2.samp[i,j] = LearnBayes::rigamma(1, mj/2+r, (S3+s)/2)
   #MCMCpack::rinvgamma(1, mj/2+r, 2/(S3+s))
   #1/rgamma(1,shape = m[j]/2+r, rate = (S3 + s)/2)
- 
+  
   # ----------------------
   # Atualizando Delta
   # ----------------------
@@ -186,9 +186,9 @@ for(i in 2:Q){
  # ----------------------
  
  # Passo de MH
- prop = rlnorm(1, log(nu.samp[i-1]), phi)
+ prop = 1+rexp(1,rate = phi)
  
- aceit = min(1,exp(fullnu(prop,alpha.samp[i],prob.samp[i,],y,aux_mu,aux_sig,aux_lam) + log(prop) - fullnu(nu.samp[i-1],alpha.samp[i],prob.samp[i,],y,aux_mu,aux_sig,aux_lam) - log(nu.samp[i-1])))
+ aceit = min(1,exp(fullnu(prop,alpha.samp[i],prob.samp[i,],y,aux_mu,aux_sig,aux_lam) - phi*nu.samp[i-1] - fullnu(nu.samp[i-1],alpha.samp[i],prob.samp[i,],y,aux_mu,aux_sig,aux_lam) + phi*prop))
  if(aceit > 1 | aceit <0){stop("Problema no passo MH")}
  if(runif(1)<=aceit){
   nu.samp[i] = prop
@@ -199,90 +199,12 @@ for(i in 2:Q){
  pb$tick(tokens = list(taxa = paste0(formatC(cont/i * 100,2,format="f"),"%")))
 };beepr::beep()
 
-# aceitacao do MH deve estar entre 0.234 e 0.44
-
-# Q = 100000 demorou 9:02:55
-
-# ----------------------------------------------------------------------
-# Ultimos valores da cadeia com Q = 10^5
-
-# prob.samp[1,] = c(0.3834102, 0.3262878, 0.2903020)
-# beta.samp[1,,] = matrix(c(-4.395930, -3.967069,  8.023600,
-#                           -4.195635,  3.960460,  8.000703,
-#                            6.019239,  4.952663,  7.174152), nrow = 3)
-# tau2.samp[1,] = c(0.49742352, 0.04233568, 0.45428368)
-# Delta.samp[1,] = c(-4.537193, -3.037586,  7.439807)
-# alpha.samp = 0.1868161
-# nu.samp = 2.277813
-# 
-
-# -----------------------------------------------------------------------
-
 # library(coda)
 # 
 # # [iter,coefs,componente]
-# traceplot(mcmc(beta.samp[seq(Q/2,Q,10),3,1]))
-# traceplot(mcmc(beta.samp[,,2]))
-# acf(beta.samp[,,1])
-# acf(beta.samp[,,2])
+# traceplot(mcmc(beta.samp[(Q/2):Q,3,1]))
+# acf((beta.samp[9500:Q,1,1]))
+# mean(beta.samp[9500:Q,1,1])
 # 
-# traceplot(mcmc(tau2.samp[,1]))
-# traceplot(mcmc(tau2.samp[,2]))
-# acf(tau2.samp[,1])
-# acf(tau2.samp[,2])
-# 
-# traceplot(mcmc(Delta.samp[,1]))
-# traceplot(mcmc(Delta.samp[,2]))
-# acf(Delta.samp[,1])
-# acf(Delta.samp[,2])
-# 
-# traceplot(mcmc(nu.samp))
+# traceplot(mcmc(nu.samp[9000:Q]))
 # acf(nu.samp)
-
-# =============================================================================
-# 
-# i = which.max(beta.samp[,1,1])
-# j = 1
-# 
-# b = -sqrt(nu.samp[i-1]/pi)*gamma((nu.samp[i-1]-1)/2)/gamma(nu.samp[i-1]/2)
-# 
-# 
-# U = diag(u.samp[i-1,])
-# m = NULL
-# index = which(z.samp[i-1,]==j)
-# mj = length(index)
-# m[j] = mj
-# Xj = X[index,] # dim = mjXp
-# Uj = U[index,index] # dim = mjXmj
-# yj = y[index] # dim = mjX1
-# tj = t.samp[i-1, index] # dim = mjX1
-# 
-# if(mj==1){
-#  XU = as.matrix(Xj)%*%Uj # t(Xj)%*%Uj
-# }else{
-#  XU = crossprod(Xj,Uj) # t(Xj)%*%Uj
-# }
-# aux_y = yj-(b+tj)*Delta.samp[i-1,j]
-# sigma_inv = XU%*%Xj + diag(tau2.samp[i-1,j]/c^2,nrow = p)
-# 
-# # media de beta0 pela matriz
-# aaa = solve(sigma_inv,crossprod(t(XU),aux_y))
-# aaa
-# # media de beta0 marginal
-# u = diag(Uj)
-# bbb = c^2*sum(u*(yj-cbind(0,X[index,-1])%*%beta.samp[i-1,,j] - (b + tj)*Delta.samp[i-1,j]))/((c^2+tau2.samp[i-1,j])*sum(u))
-# bbb
-# 
-# (aaa[1]-bbb)/bbb
-# 
-# c^2*tau2.samp[i-1,j]/((c^2+tau2.samp[i-1,j])*sum(u))
-# tau2.samp[i-1,j]*solve(sigma_inv)
-# 
-# MASS::mvrnorm(1, mu = solve(sigma_inv,XU%*%aux_y),
-#                                  Sigma = tau2.samp[i-1,j]*solve(sigma_inv))
-# k=1
-# aux_yxbeta = y[k]-aux_mu[k,z.samp[i,k]]
-# aux_denom = Delta.samp[i,z.samp[i,k]]^2 + tau2.samp[i,z.samp[i,k]]
-# aux_mean = (aux_yxbeta*Delta.samp[i,z.samp[i,k]])/aux_denom
-# aux_sd = sqrt(tau2.samp[i,z.samp[i,k]]/(u.samp[i-1,k]*aux_denom))
-# -aux_mean/aux_sd
