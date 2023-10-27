@@ -23,7 +23,7 @@ X = as.matrix(cbind(1,data[,-(1:2)])) # covariaveis com intercepto
 # Inicio do algoritmo
 # ------------------------
 
-Q = 50000 # numero de iteracoes de Gibbs
+Q = 150000 # numero de iteracoes de Gibbs
 cont = 0 # contador de aceites de MH
 
 # ~~~~~~~~~~~~~~~~
@@ -83,8 +83,8 @@ for(i in 2:Q){
  # Atualizando alpha
  # ----------------------
  
- # gama truncada em (0.02,0.5)
- alpha.samp[i] = Runuran::urgamma(1, shape = 2, scale = 1/nu.samp[i-1], lb = .02, ub = .5)
+ # gama(2,nu-1) truncada em (0.02,0.5)
+ alpha.samp[i] = Runuran::urgamma(1, shape = 2, scale = 1/(nu.samp[i-1]-1), lb = .02, ub = .5)
  
  #print(u.samp[i-1,1:10])
  
@@ -196,9 +196,12 @@ for(i in 2:Q){
 # library(coda)
 # 
 # # [iter,coefs,componente]
-# traceplot(mcmc(beta.samp[(Q/2):Q,3,1]))
-# acf((beta.samp[9500:Q,1,1]))
-# mean(beta.samp[9500:Q,1,1])
+# traceplot(mcmc(beta.samp[seq(3000,Q,100),1,1]))
+# acf((beta.samp[seq(3000,Q,100),1,1]))
+# mean(beta.samp[seq(3000,Q,100),1,1])
 # 
 # traceplot(mcmc(nu.samp[9000:Q]))
 # acf(nu.samp)
+# 
+# traceplot(mcmc(Delta.samp[seq(3000,Q,100),1]))
+# acf((Delta.samp[seq(3000,Q,100),1]))
