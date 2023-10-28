@@ -6,8 +6,8 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 rm(list=ls())
 
 source("Geracao de dados/dst.R")
-source("Phinu.R")
-source("rtruncnorm.R")
+source("Funcoes auxiliares/Phinu.R")
+source("Funcoes auxiliares/rtruncnorm.R")
 load("Geracao de dados/dados.Rdata")
 
 head(data)
@@ -203,5 +203,5 @@ for(i in 2:Q){
 # traceplot(mcmc(nu.samp[9000:Q]))
 # acf(nu.samp)
 # 
-# traceplot(mcmc(Delta.samp[seq(3000,Q,100),1]))
-# acf((Delta.samp[seq(3000,Q,100),1]))
+# traceplot(mcmc(Delta.samp[seq(25000,Q,100),1]))
+# acf((Delta.samp[seq(25000,Q,100),1]))

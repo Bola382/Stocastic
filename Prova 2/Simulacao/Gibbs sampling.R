@@ -6,8 +6,8 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 rm(list=ls())
 
 source("Geracao de dados/dst.R")
-source("fullnu.R")
-source("rtruncnorm.R")
+source("Funcoes auxiliares/fullnu.R")
+source("Funcoes auxiliares/rtruncnorm.R")
 load("Geracao de dados/dados.Rdata")
 
 head(data)
