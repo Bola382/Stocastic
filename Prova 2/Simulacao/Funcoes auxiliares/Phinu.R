@@ -7,5 +7,5 @@ Phinu = function(nu, prob, resp, mu, sigma, lambda){
  resp_mu = resp-mu
  n = length(resp)
  G = length(prob)
- sum(log(sum(exp(log(prob)+sapply(1:G, function(a) dst(resp_mu[,a], 0, sigma[a], lambda[a], nu,log=T))))))
+ sum(log(rowSums(exp(matrix(rep(log(prob),n),byrow = T,nrow = n, ncol = G)+sapply(1:G, function(a) dst(resp_mu[,a], 0, sigma[a], lambda[a], nu,log=T))))))
 }
