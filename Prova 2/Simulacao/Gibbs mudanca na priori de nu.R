@@ -6,7 +6,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 rm(list=ls())
 
 source("Geracao de dados/dst.R")
-source("Funcoes auxiliares/Phinu.R")
+source("Funcoes auxiliares/fullnu.R")
 source("Funcoes auxiliares/rtruncnorm.R")
 load("Geracao de dados/dados.Rdata")
 
@@ -23,8 +23,9 @@ X = as.matrix(cbind(1,data[,-(1:2)])) # covariaveis com intercepto
 # Inicio do algoritmo
 # ------------------------
 
-Q = 150000 # numero de iteracoes de Gibbs
+Q = 50000 # numero de iteracoes de Gibbs
 cont = 0 # contador de aceites de MH
+phi = 0.5 # parametro de taxa da proposta de MH
 
 # ~~~~~~~~~~~~~~~~
 # valores iniciais
@@ -180,9 +181,9 @@ for(i in 2:Q){
  # ----------------------
  
  # Passo de MH
- prop = 1+rexp(1,rate = alpha.samp[i])
+ prop = 1+rexp(1,rate = phi)
  
- aceit = min(1,exp(Phinu(prop,prob.samp[i,],y,aux_mu,aux_sig,aux_lam) - Phinu(nu.samp[i-1],prob.samp[i,],y,aux_mu,aux_sig,aux_lam)))
+ aceit = min(1,exp(fullnu(prop,alpha.samp[i],prob.samp[i,],y,aux_mu,aux_sig,aux_lam) - fullnu(nu.samp[i-1],alpha.samp[i],prob.samp[i,],y,aux_mu,aux_sig,aux_lam) + phi*(prop - nu.samp[i-1])))
  if(aceit > 1 | aceit <0){stop("Problema no passo MH")}
  if(runif(1)<=aceit){
   nu.samp[i] = prop

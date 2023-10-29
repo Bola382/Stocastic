@@ -9,7 +9,7 @@ sapply(list.files("Funcoes auxiliares",pattern="*.R$",full.names=TRUE,
                   ignore.case=TRUE),source,.GlobalEnv)
 source("Geracao de dados/dst.R")
 load("Geracao de dados/dados.Rdata")
-rm("fullnu")
+rm("Phinu")
 
 head(data)
 
@@ -24,8 +24,9 @@ X = as.matrix(cbind(1,data[,-(1:2)])) # covariaveis com intercepto
 # Inicio do algoritmo
 # ------------------------
 
-Q = 1000 # numero de iteracoes de Gibbs
+Q = 50000 # numero de iteracoes de Gibbs
 cont = 0 # contador de aceites de MH
+phi = 0.5 # parametro de taxa da proposta de MH
 
 # ~~~~~~~~~~~~~~~~
 # valores iniciais
@@ -135,7 +136,7 @@ for(i in 2:Q){
 # library(coda)
 # 
 # # [iter,coefs,componente]
-# traceplot(mcmc(beta.samp[,1,2]))
+# traceplot(mcmc(beta.samp[,1,1]))
 # acf((beta.samp[seq(3000,Q,100),1,1]))
 # mean(beta.samp[seq(3000,Q,100),1,1])
 # 

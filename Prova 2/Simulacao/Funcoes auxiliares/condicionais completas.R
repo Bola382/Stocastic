@@ -78,9 +78,9 @@ full_nu = function(prob,beta,tau2,Delta,alpha,nu){ # mudanca na priori de nu
  aux_sig = sqrt(tau2+Delta^2)
  aux_lam = Delta/sqrt(tau2)
  
- prop = 1+rexp(1,rate = alpha)
+ prop = 1+rexp(1,rate = phi)
  
- aceit = min(1,exp(Phinu(prop,prob,y,aux_mu,aux_sig,aux_lam) - Phinu(nu,prob,y,aux_mu,aux_sig,aux_lam)))
+ aceit = min(1,exp(fullnu(prop,alpha,prob,y,aux_mu,aux_sig,aux_lam) - fullnu(nu,alpha,prob,y,aux_mu,aux_sig,aux_lam) + phi*(prop - nu)))
  if(aceit > 1 | aceit <0){stop("Problema no passo MH")}
  if(runif(1)<=aceit){
   out = prop

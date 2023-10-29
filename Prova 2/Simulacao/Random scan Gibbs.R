@@ -24,7 +24,7 @@ X = as.matrix(cbind(1,data[,-(1:2)])) # covariaveis com intercepto
 # Inicio do algoritmo
 # ------------------------
 
-Q = 1000 # numero de iteracoes de Gibbs
+Q = 50000 # numero de iteracoes de Gibbs
 cont = 0 # contador de aceites de MH
 phi = 0.3 # "desvio padrao" da proposta de MH
 
