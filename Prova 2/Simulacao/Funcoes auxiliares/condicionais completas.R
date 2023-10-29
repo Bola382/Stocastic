@@ -64,11 +64,15 @@ full_Delta = function(j,beta,tau2,u,t,z){
  rnorm(1, omega^2*S1/denom, omega*sqrt(tau2[j]/denom))
 }
 
-full_alpha = function(nu){
+full_alpha = function(nu){ # mudanca na priori de nu
  Runuran::urgamma(1, shape = 2, scale = 1/(nu-1), lb = .02, ub = .5)
 }
 
-full_nu = function(prob,beta,tau2,Delta,alpha,nu){
+full_alpha2 = function(nu){ # priori de nu original
+ Runuran::urgamma(1, shape = 2, scale = 1/(nu), lb = .02, ub = .5)
+}
+
+full_nu = function(prob,beta,tau2,Delta,alpha,nu){ # mudanca na priori de nu
  prob = c(prob)
  aux_mu = X%*%beta+matrix(rep(b*Delta,n), nrow = n, ncol = G, byrow = T)
  aux_sig = sqrt(tau2+Delta^2)
@@ -77,6 +81,24 @@ full_nu = function(prob,beta,tau2,Delta,alpha,nu){
  prop = 1+rexp(1,rate = alpha)
  
  aceit = min(1,exp(Phinu(prop,prob,y,aux_mu,aux_sig,aux_lam) - Phinu(nu,prob,y,aux_mu,aux_sig,aux_lam)))
+ if(aceit > 1 | aceit <0){stop("Problema no passo MH")}
+ if(runif(1)<=aceit){
+  out = prop
+ }else{
+  out = nu
+ }
+ return(out)
+}
+
+full_nu2 = function(prob,beta,tau2,Delta,alpha,nu){ # priori de nu original
+ prob = c(prob)
+ aux_mu = X%*%beta+matrix(rep(b*Delta,n), nrow = n, ncol = G, byrow = T)
+ aux_sig = sqrt(tau2+Delta^2)
+ aux_lam = Delta/sqrt(tau2)
+ 
+ prop = rlnorm(1, log(nu), phi)
+ 
+ aceit = min(1,exp(fullnu(prop,alpha,prob,y,aux_mu,aux_sig,aux_lam) + log(prop) - fullnu(nu,alpha,prob,y,aux_mu,aux_sig,aux_lam) - log(nu)))
  if(aceit > 1 | aceit <0){stop("Problema no passo MH")}
  if(runif(1)<=aceit){
   out = prop
