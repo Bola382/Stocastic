@@ -194,15 +194,4 @@ for(i in 2:Q){
  pb$tick(tokens = list(taxa = paste0(formatC(cont/i * 100,2,format="f"),"%")))
 };beepr::beep()
 
-# library(coda)
-# 
-# # [iter,coefs,componente]
-# traceplot(mcmc(beta.samp[seq(3000,Q,100),1,1]))
-# acf((beta.samp[seq(3000,Q,100),1,1]))
-# mean(beta.samp[seq(3000,Q,100),1,1])
-# 
-# traceplot(mcmc(nu.samp[9000:Q]))
-# acf(nu.samp)
-# 
-# traceplot(mcmc(Delta.samp[seq(25000,Q,100),1]))
-# acf((Delta.samp[seq(25000,Q,100),1]))
+# (\) [========================>] 100% [Decorrido: 02:25:41 || Estimado:  0s] Taxa de aceitacao 14.66%
