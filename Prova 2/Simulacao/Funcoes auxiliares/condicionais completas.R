@@ -144,7 +144,7 @@ full_Z = function(prob,beta,tau2,Delta,nu){
  aux_lam = Delta/sqrt(tau2)
  out = NULL
  for(k in 1:n){
-  aux_prob = exp(log(prob)+sapply(1:G,function(a) dst(y[k], aux_mu[k,a], aux_sig[a], aux_lam[a], nu,log=T)))
+  aux_prob = exp(log(prob)+sapply(1:G,function(a) dst(y[k], aux_mu[k,a], aux_sig[a], aux_lam[a], nu,log=T))) # (eta1,eta2,eta3) x (st1,st2,st3)
   out[k] = sample(1:G,1, prob = aux_prob) # prob eh normalizado internamente
  }
  return(out)
