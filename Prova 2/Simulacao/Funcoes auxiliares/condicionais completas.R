@@ -92,6 +92,7 @@ full_nu = function(prob,beta,tau2,Delta,alpha,nu){ # mudanca na priori de nu
 
 full_nu2 = function(prob,beta,tau2,Delta,alpha,nu){ # priori de nu original
  prob = c(prob)
+ G = length(prob)
  aux_mu = X%*%beta+matrix(rep(b*Delta,n), nrow = n, ncol = G, byrow = T)
  aux_sig = sqrt(tau2+Delta^2)
  aux_lam = Delta/sqrt(tau2)
@@ -275,7 +276,26 @@ full_K.TS = function(Gplus,Gmax,M,gammaProb, lpriori){
  prob_K = as.numeric(prob_K/norm_K)
  
  aux2 = c(rmultinom(1,1,prob_K))
+ options(digits=7)
  
  Gplus + which(aux2==1)-1
- options(digits=7)
+}
+
+
+full_gammaProb.TS = function(gammaP,n,M,G,Gplus){
+ #phigamma ja deve estar especificado
+ prop = rlnorm(1, log(gammaP), phigamma)
+ 
+ aceit = min(1,aceitGamma(gammaP,prop,n,M,G,Gplus))
+ if(aceit > 1 | aceit <0){stop("Problema no passo MH")}
+ if(runif(1)<=aceit){
+  out = prop
+ }else{
+  out = nu
+ }
+ return(out)
+}
+
+full_prob.TS = function(z,G,gammaP){
+ gtools::rdirichlet(1, alpha = gammaP/G + contagem(z,G))
 }

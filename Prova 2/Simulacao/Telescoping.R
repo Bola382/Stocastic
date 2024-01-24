@@ -38,7 +38,7 @@ u.samp = t.samp = z.samp = matrix(NA, nrow = Q, ncol = n)
 beta.samp = array(NA, dim = c(Q,p,G.max), dimnames = list(1:Q, 1:p, 1:G.max))
 
 # hiperparametros
-gammaProb = 1
+gammaProb = rf(1,6,3)
 xi = rep(gammaProb/G.samp,G.samp) # prob
 c = 10 # da beta (c <- sqrt(c) das minhas contas)
 eta = 0; omega = 10 # da Delta
@@ -59,16 +59,18 @@ z.samp[1,] = sample(1:G.samp,n,prob=prob.samp[1,1:G.samp], replace = T) # latent
 # Barra de progresso
 # ~~~~~~~~~~~~~~~~~~~
 library(progress)
-format = "(:spin) [:bar] :percent [Decorrido: :elapsedfull || Estimado: :eta] Taxa de aceitacao :taxa"
+format = "(:spin) [:bar] :percent [Decorrido: :elapsedfull || Estimado: :eta] Taxa gl :taxa || Taxa gammaP :taxa2"
 pb = progress_bar$new(format, clear = FALSE, total = Q, complete = "=", incomplete = "-", width = 100)
 
 
 # -------------------------------------------------------------------------------
-#                                    Gibbs Sampling
+#                                    Amostrador
 # -------------------------------------------------------------------------------
 
-phi = 0.3 # "desvio padrao" da proposta de MH
-cont = 0 # contador de aceites de MH
+phi = 0.3 # "desvio padrao" da proposta de MH para nu
+cont = 0 # contador de aceites de MH para nu
+phigamma = 0.3 # "desvio padrao" da proposta de MH para gammaProb
+contgamma = 0 # contador de aceites de MH para gammaProb
 
 library(compiler)
 enableJIT(3)
@@ -104,6 +106,9 @@ for(i in 2:Q){
  # atualizando Gplus
  Gplus.samp[i] = sum(M!=0)
  
+ # removendo custers vazios da contagem
+ M = M[1:Gplus.samp[i]]
+ 
  # ===========================================================================
  #                                  Passo 2
  # ===========================================================================
@@ -137,8 +142,8 @@ for(i in 2:Q){
  
  # Atualizando U e T
  aux_mu = X%*%beta.samp[i,,1:Gplus.samp[i]]+
-  matrix(rep(b*Delta.samp[i,1:Gplus.samp[i]],n),
-         nrow = n, ncol = Gplus.samp[i], byrow = T)
+          matrix(rep(b*Delta.samp[i,1:Gplus.samp[i]],n),
+          nrow = n, ncol = Gplus.samp[i], byrow = T)
  aux_yxbeta = y-aux_mu
  
  # atualizando U
@@ -152,6 +157,11 @@ for(i in 2:Q){
                         u.samp[i,], z.samp[i,])
   
 
+ # -------------------------------
+ # b) atualizando hiperparametros
+ # -------------------------------
+ alpha.samp[i] = full_alpha2(nu.samp[i-1])
+ 
  # ===========================================================================
  #                                  Passo 3
  # ===========================================================================
@@ -162,23 +172,52 @@ for(i in 2:Q){
  G.samp[i] = full_K.TS(Gplus.samp[i],G.max,M,gammaProb[i-1],"unif")
  
  # ----------------------
- # Atualizando nu
+ # b) atualizando gammaP
  # ----------------------
- nu.samp[i] = full_nu2(prob.samp[i,],beta.samp[i,,],tau2.samp[i,],Delta.samp[i,],
-                       alpha.samp[i],nu.samp[i-1])
+ gammaProb[i] = full_gammaProb.TS(gammaProb[i-1],n,M,G.samp[i],Gplus.samp[i])
+ contgamma = ifelse(gammaProb[i]==gammaProb[i-1],contgamma,contgamma + 1)
  
- cont = ifelse(nu.samp[i]==nu.samp[i-1],cont,cont + 1)
  
- # ----------------------
- # Atualizando alpha
- # ----------------------
- alpha.samp[i] = full_alpha2(nu.samp[i-1])
+ # ===========================================================================
+ #                                  Passo 4
+ # ===========================================================================
+ 
+ # ---------------------------
+ # a) adicionando componentes 
+ # vazios
+ # ---------------------------
+ dif = G.samp[i]-Gplus.samp[i]
+ if(dif > 0){
+  M = c(M,rep(0,dif))
+  
+  mtyindex = (Gplus.samp[i]+1):G.samp[i]
+   
+  # Atualizando beta
+  beta.samp[i,,mtyindex] = matrix(rnorm(p*dif,sd=c),ncol=dif)
+   
+  # Atualizando tau2
+  tau2.samp[i,mtyindex] = 1/rgamma(dif,r,s)
+   
+  # Atualizando Delta
+  Delta.samp[i,mtyindex] = rnorm(dif,eta,omega)
+ }
  
  # ----------------------
  # Atualizando prob
  # ----------------------
- prob.samp[i,] = full_prob(z.samp[i-1,])
+ compindex = 1:G.samp[i]
+ prob.samp[i,compindex] = full_prob.TS(z.samp[i,],G.samp[i],gammaProb[i])
  
-  
- pb$tick(tokens = list(taxa = paste0(formatC(cont/i * 100,2,format="f"),"%")))
+ # ----------------------
+ # Atualizando nu
+ # ----------------------
+ nu.samp[i] = full_nu2(prob.samp[i,compindex],beta.samp[i,,compindex],
+                       tau2.samp[i,compindex],Delta.samp[i,compindex],
+                       alpha.samp[i],nu.samp[i-1])
+ 
+ cont = ifelse(nu.samp[i]==nu.samp[i-1],cont,cont + 1)
+ 
+ 
+ pb$tick(tokens = list(taxa = paste0(formatC(cont/i * 100,2,format="f"),"%"),
+                       taxa2 = paste0(formatC(contgamma/i * 100,2,format="f"),"%")))
 };beepr::beep()
