@@ -291,7 +291,7 @@ full_gammaProb.TS = function(gammaP,n,M,G,Gplus){
  if(runif(1)<=aceit){
   out = prop
  }else{
-  out = nu
+  out = gammaP
  }
  return(out)
 }

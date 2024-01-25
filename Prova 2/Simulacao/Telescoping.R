@@ -59,7 +59,7 @@ z.samp[1,] = sample(1:G.samp,n,prob=prob.samp[1,1:G.samp], replace = T) # latent
 # Barra de progresso
 # ~~~~~~~~~~~~~~~~~~~
 library(progress)
-format = "(:spin) [:bar] :percent [Decorrido: :elapsedfull || Estimado: :eta] Taxa gl :taxa || Taxa gammaP :taxa2"
+format = "(:spin) [:bar] :percent [Decorrido: :elapsedfull || Estimado: :eta] Taxa gl :taxa || Taxa gammaP :prop"
 pb = progress_bar$new(format, clear = FALSE, total = Q, complete = "=", incomplete = "-", width = 100)
 
 
@@ -69,7 +69,7 @@ pb = progress_bar$new(format, clear = FALSE, total = Q, complete = "=", incomple
 
 phi = 0.3 # "desvio padrao" da proposta de MH para nu
 cont = 0 # contador de aceites de MH para nu
-phigamma = 0.3 # "desvio padrao" da proposta de MH para gammaProb
+phigamma = 2.5 # "desvio padrao" da proposta de MH para gammaProb
 contgamma = 0 # contador de aceites de MH para gammaProb
 
 library(compiler)
@@ -219,5 +219,5 @@ for(i in 2:Q){
  
  
  pb$tick(tokens = list(taxa = paste0(formatC(cont/i * 100,2,format="f"),"%"),
-                       taxa2 = paste0(formatC(contgamma/i * 100,2,format="f"),"%")))
+                       prop = paste0(formatC(contgamma/i * 100,2,format="f"),"%")))
 };beepr::beep()
