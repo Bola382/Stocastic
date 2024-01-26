@@ -31,6 +31,7 @@ G.samp = Gplus.samp = 10 # numero de componentes e clusters
 
 # propostas geradas a partir das prioris
 set.seed(2)
+# set.seed(19) test 2
 
 # para guardar amostras
 prob.samp = tau2.samp = Delta.samp = matrix(NA, nrow = Q, ncol = G.max)

@@ -30,17 +30,30 @@ GplusHat = unique(Gplus.samp)[which.max(table(Gplus.samp))]
 # filtrando amostras com G+ igual ao estimado
 index2 = which(Gplus.samp==GplusHat)
 
+beta.samp = beta.samp[index2,,]
+tau2.samp = tau2.samp[index2,]
+Delta.samp = Delta.samp[index2,]
+nu.samp = nu.samp[index2]
+prob.samp = prob.samp[index2,]
+gammaProb = gammaProb[index2]
+alpha.samp = alpha.samp[index2]
+u.samp = u.samp[index2,]
+t.samp = t.samp[index2,]
+z.samp = z.samp[index2,]
+G.samp = G.samp[index2]
+Gplus.samp = Gplus.samp[index2]
+
 # montando uma matriz de parametros
 nsamp = length(index2)
 
 betamat = matrix(NA,nrow = nsamp*GplusHat, ncol = ncol(X)) # cada coluna vai ser um dos coefs
 # misturando os coefs de comps diferentes, ou seja, coluna 1 beta1, qual comp? sim.
 for(j in 1:ncol(X)){
- betamat[,j] = c(beta.samp[index2,j,1:GplusHat])
+ betamat[,j] = c(beta.samp[,j,1:GplusHat])
 }
 
-tau2vec = c(tau2.samp[index2,1:GplusHat])
-Deltavec = c(Delta.samp[index2,1:GplusHat])
+tau2vec = c(tau2.samp[,1:GplusHat])
+Deltavec = c(Delta.samp[,1:GplusHat])
 # ficam organizados por iteracao X cluster
 
 # matriz de parametros
@@ -72,14 +85,14 @@ G_ok = G.samp[idpermu]
 
 for(i in 1:npermu){
  for(j in 1:GplusHat){
-  prob_ok[i,new_label[i,j]] = prob.samp[idpermu[i],j]
-  tau2_ok[i,new_label[i,j]] = tau2.samp[idpermu[i],j]
-  Delta_ok[i,new_label[i,j]] = Delta.samp[idpermu[i],j]
+  prob_ok[i,new_label[idpermu[i],j]] = prob.samp[idpermu[i],j]
+  tau2_ok[i,new_label[idpermu[i],j]] = tau2.samp[idpermu[i],j]
+  Delta_ok[i,new_label[idpermu[i],j]] = Delta.samp[idpermu[i],j]
   for(k in 1:ncol(X)){
-   beta_ok[i,k,new_label[i,j]] = beta.samp[idpermu[i],k,j]
+   beta_ok[i,k,new_label[idpermu[i],j]] = beta.samp[idpermu[i],k,j]
   }
   for(l in 1:n){
-   z_ok[i,l] = new_label[i,z.samp[idpermu[i]]]
+   z_ok[i,l] = new_label[idpermu[i],z.samp[idpermu[i]]]
   }
  }
 }
