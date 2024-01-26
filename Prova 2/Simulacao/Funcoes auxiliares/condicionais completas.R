@@ -233,7 +233,7 @@ full_T.TS = function(tau2,Delta,u,z){
 
 full_K.TS = function(Gplus,Gmax,M,gammaProb, lpriori){
  options(digits=10)
- lpriori = ifelse(lpriori == "unif",0,Brobdingnag::as.brob(lpriori)) # vetor com lprioris de K
+ lpriori = ifelse(lpriori == "unif",rep(0,Gmax),Brobdingnag::as.brob(lpriori)) # vetor com lprioris de K
  
  # para G = Gplus
  gammaRatio = gammaProb/Gplus
@@ -245,8 +245,7 @@ full_K.TS = function(Gplus,Gmax,M,gammaProb, lpriori){
  # pacote Brobdingnag para tratar destes numeros
  aux = Brobdingnag::as.brob(aux)
  
- lprob_K = lpriori + 
-  Brobdingnag::as.brob(Gplus*log(gammaProb))- 
+ lprob_K =  Brobdingnag::as.brob(Gplus*log(gammaProb))- 
   Brobdingnag::as.brob(Gplus*log(Gplus))+ 
   Brobdingnag::as.brob(lfactorial(Gplus)) - 
   Brobdingnag::as.brob(lfactorial(Gplus-Gplus)) + 
@@ -262,15 +261,14 @@ full_K.TS = function(Gplus,Gmax,M,gammaProb, lpriori){
   
   aux = Brobdingnag::as.brob(aux)
   
-  lprob_K = Brobdingnag::cbrob(lprob_K,lpriori + 
-                       Brobdingnag::as.brob(Gplus*log(gammaProb))- 
+  lprob_K = Brobdingnag::cbrob(lprob_K, Brobdingnag::as.brob(Gplus*log(gammaProb))- 
                        Brobdingnag::as.brob(Gplus*log(G))+ 
                        Brobdingnag::as.brob(lfactorial(G)) - 
                        Brobdingnag::as.brob(lfactorial(G-Gplus)) + 
                        sum(aux))
  }
  # normalizando prob
- prob_K = exp(lprob_K)
+ prob_K = exp(lpriori[Gplus:Gmax]+lprob_K)
  norm_K = sum(prob_K)
  
  prob_K = as.numeric(prob_K/norm_K)
