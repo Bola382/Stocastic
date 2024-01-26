@@ -1,36 +1,110 @@
 # ==================================================================
-# Trata o problema de label switching (ta errado)
+# Trata o problema de label switching (Sylvia Fruhwirth-Schnatter)
 # as cadeias geradas nao estao disponiveis por conta de seu tamanho
 # ===================================================================
-nsamp = nrow(prob.samp)
+
+# parametros fixados
+beta
+sigma
+lambda
+nu
+probs
+G = 3
+
+# valores iniciais G = Gplus = 10, demais valores simulados da priori
+
+# hiperparametros
+c # de beta
+omega # de Delta
+r;s # de tau2
+gammaProb # de probs
+
+# configuracoes do TS
+G.max # maximo de componentes
+Q # numero de iteracoes
+phi;phigamma # "desvio padrao" dos passos de MH
+
+# aplicando burn-in e thin
+burn = Q/2; thin = 5
+index = seq(burn+1,Q,by=5)
+
+beta.samp = beta.samp[index,,]
+tau2.samp = tau2.samp[index,]
+Delta.samp = Delta.samp[index,]
+nu.samp = nu.samp[index]
+prob.samp = prob.samp[index,]
+gammaProb = gammaProb[index]
+alpha.samp = alpha.samp[index]
+u.samp = u.samp[index,]
+t.samp = t.samp[index,]
+z.samp = z.samp[index,]
+G.samp = G.samp[index]
+Gplus.samp = Gplus.samp[index]
+
+# ==================================================================
+#                       Tratando label-switching
+# ==================================================================
+
+# estimando G+
+GplusHat = unique(Gplus.samp)[which.max(table(Gplus.samp))]
+
+# filtrando amostras com G+ igual ao estimado
+index2 = which(Gplus.samp==GplusHat)
 
 # montando uma matriz de parametros
-probvec = c(prob.samp)
-betamat = matrix(NA,nrow = nsamp*G, ncol = p) # cada coluna vai ser um dos coefs
-                                              # misturando os coefs de comps diferentes
-for(j in 1:p){
- betamat[,j] = c(beta.samp[,j,])
+nsamp = length(index2)
+
+betamat = matrix(NA,nrow = nsamp*GplusHat, ncol = ncol(X)) # cada coluna vai ser um dos coefs
+# misturando os coefs de comps diferentes, ou seja, coluna 1 beta1, qual comp? sim.
+for(j in 1:ncol(X)){
+ betamat[,j] = c(beta.samp[index2,j,1:GplusHat])
 }
 
-tau2vec = c(tau2.samp)
-Deltavec = c(Delta.samp)
+tau2vec = c(tau2.samp[index2,1:GplusHat])
+Deltavec = c(Delta.samp[index2,1:GplusHat])
+# ficam organizados por iteracao X cluster
 
 # matriz de parametros
-theta = cbind(probvec,betamat,tau2vec,Deltavec)
+theta = cbind(betamat,tau2vec,Deltavec)
 
 # novos rotulos
-set.seed(2)
-aux = kmeans(theta,centers=G,iter.max = 150)
+aux = kmeans(theta,centers=GplusHat,iter.max = 300)
 labels = aux$cluster
-aux$size # devemos ter (Q-burn)/thin + 1  em cada cluster
+new_label = matrix(labels,nrow=nsamp,ncol=GplusHat)
 
-# re-rotulando os parametros
-for(j in 1:G){
- prob.samp[,j] = probvec[labels==j]
- beta.samp[,,j] = betamat[labels==j,]
- tau2.samp[,j] = tau2vec[labels==j]
- Delta.samp[,j] = Deltavec[labels==j]
+# verificando quais rotulos sao uma permutacao valida de {1,...,G+}
+idpermu = unlist(sapply(1:nsamp, function(a) if(all(sort(new_label[a,])==1:GplusHat)){a}))
+npermu = length(idpermu)
+
+# ajustando os rotulos dos parametros em cada permutacao valida
+
+prob_ok = matrix(NA, nrow = npermu, ncol = GplusHat)
+beta_ok = array(NA, dim = c(npermu,ncol(X),GplusHat), 
+                dimnames = list(1:npermu,1:ncol(X),1:GplusHat))
+tau2_ok = matrix(NA, nrow = npermu, ncol = GplusHat)
+Delta_ok = matrix(NA, nrow = npermu, ncol = GplusHat)
+z_ok = matrix(NA, nrow = npermu, ncol = n)
+t_ok = t.samp[idpermu,]
+u_ok = u.samp[idpermu,]
+nu_ok = nu.samp[idpermu]
+
+alpha_ok = alpha.samp[idpermu]
+G_ok = G.samp[idpermu]
+
+for(i in 1:npermu){
+ for(j in 1:GplusHat){
+  prob_ok[i,new_label[i,j]] = prob.samp[idpermu[i],j]
+  tau2_ok[i,new_label[i,j]] = tau2.samp[idpermu[i],j]
+  Delta_ok[i,new_label[i,j]] = Delta.samp[idpermu[i],j]
+  for(k in 1:ncol(X)){
+   beta_ok[i,k,new_label[i,j]] = beta.samp[idpermu[i],k,j]
+  }
+  for(l in 1:n){
+   z_ok[i,l] = new_label[i,z.samp[idpermu[i]]]
+  }
+ }
 }
 
-rm(list=setdiff(ls(), c("prob.samp","beta.samp","tau2.samp","Delta.samp","nu.samp",
-                        "alpha.samp","z.samp","u.samp","t.samp","labels","Q","p")))
+# cortesia do chatgpt v
+rm(list = setdiff(ls(),c(grep("_ok$",ls(),value = T),"X","y")))
+# cortesia do chatgpt ^
