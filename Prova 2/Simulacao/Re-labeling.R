@@ -3,27 +3,6 @@
 # as cadeias geradas nao estao disponiveis por conta de seu tamanho
 # ===================================================================
 
-# parametros fixados
-beta
-sigma
-lambda
-nu
-probs
-G = 3
-
-# valores iniciais G = Gplus = 10, demais valores simulados da priori
-
-# hiperparametros
-c # de beta
-omega # de Delta
-r;s # de tau2
-gammaProb # de probs
-
-# configuracoes do TS
-G.max # maximo de componentes
-Q # numero de iteracoes
-phi;phigamma # "desvio padrao" dos passos de MH
-
 # aplicando burn-in e thin
 burn = Q/2; thin = 5
 index = seq(burn+1,Q,by=5)
@@ -73,7 +52,7 @@ labels = aux$cluster
 new_label = matrix(labels,nrow=nsamp,ncol=GplusHat)
 
 # verificando quais rotulos sao uma permutacao valida de {1,...,G+}
-idpermu = unlist(sapply(1:nsamp, function(a) if(all(sort(new_label[a,])==1:GplusHat)){a}))
+idpermu = unlist(sapply(1:nsamp, function(a) if(identical(sort(new_label[a,]),1:GplusHat)){a}))
 npermu = length(idpermu)
 
 # ajustando os rotulos dos parametros em cada permutacao valida
