@@ -29,6 +29,8 @@ Q = 50000 # numero de iteracoes
 G.max = 100 # maximo de componentes a ser verificado
 G.samp = Gplus.samp = 10 # numero de componentes e clusters
 
+lprio_G = logbnb(1:G.max) # valor da log priori de G para 1:G.max
+
 # propostas geradas a partir das prioris
 set.seed(2)
 # set.seed(19) test 2
@@ -170,7 +172,7 @@ for(i in 2:Q){
  # ----------------------
  # a) atualizando G
  # ----------------------
- G.samp[i] = full_K.TS(Gplus.samp[i],G.max,M,gammaProb[i-1],"unif")
+ G.samp[i] = full_K.TS(Gplus.samp[i],G.max,M,gammaProb[i-1],lprio_G)
  
  # ----------------------
  # b) atualizando gammaP

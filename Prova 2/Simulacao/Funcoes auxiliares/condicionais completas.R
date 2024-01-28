@@ -233,45 +233,24 @@ full_T.TS = function(tau2,Delta,u,z){
 
 full_K.TS = function(Gplus,Gmax,M,gammaProb, lpriori){
  options(digits=10)
- lpriori = ifelse(lpriori == "unif",rep(0,Gmax),Brobdingnag::as.brob(lpriori)) # vetor com lprioris de K
+ lpriori = if(lpriori == "unif"){rep(0,Gmax)}else{lpriori} # vetor com lprioris de K
+ lprob_K = NULL
+ Mmax = sapply(M, lgamma) # evitar Inf
  
- # para G = Gplus
- gammaRatio = gammaProb/Gplus
+ # log probabilidade
  
- # para calcular o somatorio
- aux = sapply(1:Gplus, function(a) lgamma(M[a] + gammaRatio) - lgamma(1 + gammaRatio))
- 
- # numeros estupidamente grandes nao importa oq eu faca
- # pacote Brobdingnag para tratar destes numeros
- aux = Brobdingnag::as.brob(aux)
- 
- lprob_K =  Brobdingnag::as.brob(Gplus*log(gammaProb))- 
-  Brobdingnag::as.brob(Gplus*log(Gplus))+ 
-  Brobdingnag::as.brob(lfactorial(Gplus)) - 
-  Brobdingnag::as.brob(lfactorial(Gplus-Gplus)) + 
-  sum(aux)
- 
- # para os demais G
- 
- for(G in (Gplus+1):Gmax){
+ for(G in Gplus:Gmax){
   gammaRatio = gammaProb/G
   
   # para calcular o somatorio
   aux = sapply(1:Gplus, function(a) lgamma(M[a] + gammaRatio) - lgamma(1 + gammaRatio))
   
-  aux = Brobdingnag::as.brob(aux)
-  
-  lprob_K = Brobdingnag::cbrob(lprob_K, Brobdingnag::as.brob(Gplus*log(gammaProb))- 
-                       Brobdingnag::as.brob(Gplus*log(G))+ 
-                       Brobdingnag::as.brob(lfactorial(G)) - 
-                       Brobdingnag::as.brob(lfactorial(G-Gplus)) + 
-                       sum(aux))
+  lprob_K[G-Gplus+1] = Gplus*log(gammaProb) - Gplus*log(G) + lfactorial(G) - 
+   lfactorial(G-Gplus) + sum(aux) - sum(Mmax) # evitar Inf
  }
- # normalizando prob
- prob_K = exp(lpriori[Gplus:Gmax]+lprob_K)
- norm_K = sum(prob_K)
  
- prob_K = as.numeric(prob_K/norm_K)
+ prob_K = exp(lpriori[Gplus:Gmax]+lprob_K)
+ if(is.infinite(sum(prob_K))){stop("Problema na condicional de G")}
  
  aux2 = c(rmultinom(1,1,prob_K))
  options(digits=7)
