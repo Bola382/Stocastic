@@ -81,6 +81,7 @@ u_ok = u.samp[idpermu,]
 nu_ok = nu.samp[idpermu]
 
 alpha_ok = alpha.samp[idpermu]
+gammaProb_ok = gammaProb[idpermu]
 G_ok = G.samp[idpermu]
 
 for(i in 1:npermu){
@@ -92,11 +93,12 @@ for(i in 1:npermu){
    beta_ok[i,k,new_label[idpermu[i],j]] = beta.samp[idpermu[i],k,j]
   }
   for(l in 1:n){
-   z_ok[i,l] = new_label[idpermu[i],z.samp[idpermu[i]]]
+   z_ok[i,l] = new_label[idpermu[i],z.samp[idpermu[i],l]]
   }
  }
 }
 
+z_real = data$comp
 # cortesia do chatgpt v
-rm(list = setdiff(ls(),c(grep("_ok$",ls(),value = T),"X","y")))
+rm(list = setdiff(ls(),c(grep("_ok$",ls(),value = T),"z_real","X","y")))
 # cortesia do chatgpt ^
