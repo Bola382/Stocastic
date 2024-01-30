@@ -233,7 +233,7 @@ full_T.TS = function(tau2,Delta,u,z){
 
 full_K.TS = function(Gplus,Gmax,M,gammaProb, lpriori){
  options(digits=10)
- lpriori = if(lpriori == "unif"){rep(0,Gmax)}else{lpriori} # vetor com lprioris de K
+ lpriori = if(any(lpriori == "unif")){rep(0,Gmax)}else{lpriori} # vetor com lprioris de K
  lprob_K = NULL
  Mmax = sapply(M, lgamma) # evitar Inf
  
