@@ -5,8 +5,8 @@ R = 10 # numero de replicacoes
 
 g = c("G2","","G4") # numero de componentes
 
-type = 3 # tipos
-n = 100 # tamanho amostral
+type = 1 # tipos
+n = 1000 # tamanho amostral
 
 file = paste0("n",n,"type",type,g[2])
 file2 = paste0("n",n,"type",type)
